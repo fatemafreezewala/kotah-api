@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleInFamily {
+  OWNER
+  SPOUSE
+  SON
+  DAUGHTER
+  GUARDIAN
+  OTHER
+}
+
+model User {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  email         String?  @unique
+  phone         String?  @unique
+  passwordHash  String?
+  name          String?
+  gender        String?
+  birthDate     DateTime?
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // relations
+  memberships   FamilyMember[]
+  sessions      Session[]
+  ownedFamilies Family[] @relation("FamilyOwner") // families where the user is owner
+}
+
+model Family {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  ownerId   String   @db.ObjectId
+
+  // relations
+  owner     User     @relation("FamilyOwner", fields: [ownerId], references: [id])
+  members   FamilyMember[]
+  invitations Invitation[]
+  locations  Location[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model FamilyMember {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String       @db.ObjectId
+  familyId    String       @db.ObjectId
+  role        RoleInFamily
+  createdAt   DateTime     @default(now())
+
+  // relations
+  user        User         @relation(fields: [userId], references: [id])
+  family      Family       @relation(fields: [familyId], references: [id])
+
+  @@unique([userId, familyId])
+  @@index([familyId])
+  @@index([userId])
+}
+
+model Invitation {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  familyId     String     @db.ObjectId
+  invitedPhone String?
+  invitedEmail String?
+  role         RoleInFamily
+  code         String     // 6-digit or UUID
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  createdAt    DateTime   @default(now())
+
+  // relations
+  family       Family     @relation(fields: [familyId], references: [id])
+
+  @@index([familyId])
+  @@index([invitedPhone])
+  @@index([invitedEmail])
+  @@index([code])
+}
+
+model Session {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String     @db.ObjectId
+  refreshJti  String     @unique
+  createdAt   DateTime   @default(now())
+  expiresAt   DateTime
+
+  // relations
+  user        User       @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Otp {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  target      String    // phone or email
+  code        String
+  purpose     String    // "signup" | "login" | "invite"
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([target])
+  @@index([code])
+  @@index([expiresAt])
+}
+
+model Location {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  familyId  String   @db.ObjectId
+  label     String
+  address   String?
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+
+  // relations
+  family    Family   @relation(fields: [familyId], references: [id])
+
+  @@index([familyId])
+}
