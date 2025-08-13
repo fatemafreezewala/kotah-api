@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch index.ts",
-    "build": "tsup index.ts --format esm --dts --clean",
+    "build": "tsup index.ts --format esm --dts --clean --external fs,path,url,http,https,crypto,stream,os,util",
     "start": "node dist/index.js",
     "studio": "prisma studio",
     "db:push": "prisma db push",
