@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch index.ts",
     "build": "tsup index.ts --format esm --dts --clean --external fs,path,url,http,https,crypto,stream,os,util",

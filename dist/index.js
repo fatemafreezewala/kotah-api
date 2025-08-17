@@ -6444,7 +6444,7 @@ await app.register(swagger, {
     },
     tags: [
       { name: "Auth", description: "Authentication" },
-      { name: "Profile", description: "User profile management" }
+      { name: "Profile", description: "User profile  management" }
       // { name: "Family", description: "Families & members" },
     ]
   }
