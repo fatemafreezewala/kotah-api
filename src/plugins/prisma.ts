@@ -1,16 +1,15 @@
 import fp from "fastify-plugin";
 import { createRequire } from "node:module";
 
-// 1) Get runtime PrismaClient via require
 const require = createRequire(import.meta.url);
-const { PrismaClient } = require("../../generated/prisma");
+const { PrismaClient } = require("@prisma/client");
 
-// 2) Import type separately for TypeScript
-import type { PrismaClient as PrismaClientType } from "../../generated/prisma/index.js";
+// type import (only types, no runtime code)
+import type { PrismaClient as PrismaClientType } from "@prisma/client";
 
 declare module "fastify" {
   interface FastifyInstance {
-    prisma: PrismaClientType; // ✅ type comes from import type
+    prisma: PrismaClientType;
   }
 }
 
