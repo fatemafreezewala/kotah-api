@@ -1,9 +1,8 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { Prisma } from "../../generated/prisma/index.js";
 
-// shared validator helpers
-const ISODate = z.coerce.date(); // accepts string/number -> Date
+// Shared validator helper
+const ISODate = z.coerce.date(); // accepts string/number → Date
 
 // ----- GET /profile
 export async function getProfile(req: FastifyRequest, reply: FastifyReply) {
@@ -20,7 +19,6 @@ export async function getProfile(req: FastifyRequest, reply: FastifyReply) {
   });
 
   if (!user) return reply.notFound("User not found");
-
   return reply.send({ user });
 }
 
@@ -58,12 +56,12 @@ const UpdateProfileSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
 });
+
 export async function updateProfile(req: FastifyRequest, reply: FastifyReply) {
   const userId = (req.user as any)?.sub as string;
   const body = UpdateProfileSchema.parse(req.body);
 
-  // Remove undefined values and convert nullable ones to null
-  const data: Prisma.UserUpdateInput = {
+  const data: any = {
     ...(body.name !== undefined && { name: body.name }),
     ...(body.email !== undefined && { email: body.email ?? null }),
     ...(body.phone !== undefined && { phone: body.phone ?? null }),
@@ -79,18 +77,13 @@ export async function updateProfile(req: FastifyRequest, reply: FastifyReply) {
     });
     return reply.send({ user });
   } catch (err: any) {
-    if (
-      err instanceof Prisma.PrismaClientKnownRequestError &&
-      err.code === "P2002"
-    ) {
-      return reply.badRequest("Email or phone already in use");
-    }
+    // just log and return generic error
     req.server.log.error({ err }, "updateProfile failed");
     return reply.internalServerError("Unable to update profile");
   }
 }
 
-// ----- POST /profile/complete  (finish registration)
+// ----- POST /profile/complete (finish registration)
 const LocationSchema = z.object({
   label: z.string().min(1),
   address: z
@@ -143,8 +136,8 @@ export async function completeProfile(
   } = CompleteProfileSchema.parse(req.body);
 
   try {
-    const result = await req.server.prisma.$transaction(async (tx) => {
-      // 1) update user profile (omit undefined, nullify empty)
+    const result = await req.server.prisma.$transaction(async (tx: any) => {
+      // 1) update user profile
       const user = await tx.user.update({
         where: { id: userId },
         data: {
@@ -157,22 +150,15 @@ export async function completeProfile(
 
       // 2) create family
       const family = await tx.family.create({
-        data: {
-          name: familyName,
-          ownerId: userId,
-        },
+        data: { name: familyName, ownerId: userId },
       });
 
       // 3) create membership
       await tx.familyMember.create({
-        data: {
-          userId,
-          familyId: family.id,
-          role: roleInFamily as any,
-        },
+        data: { userId, familyId: family.id, role: roleInFamily as any },
       });
 
-      // 4) optional locations (convert undefined → null)
+      // 4) optional locations
       if (locations?.length) {
         await tx.location.createMany({
           data: locations.map((l) => ({
@@ -189,7 +175,7 @@ export async function completeProfile(
     });
 
     return reply.code(201).send({ ok: true, ...result });
-  } catch (err) {
+  } catch (err: any) {
     req.server.log.error({ err }, "completeProfile failed");
     return reply.internalServerError("Unable to complete registration");
   }
