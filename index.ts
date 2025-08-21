@@ -38,7 +38,10 @@ await app.register(swagger, {
       description: "Auth, Families, Members, Locations",
       version: "1.0.0",
     },
-    servers: [{ url: "http://localhost:3000", description: "local" }],
+    servers: [
+      { url: "http://localhost:3000", description: "Local dev" },
+      { url: "http://68.183.55.216:3000", description: "Production" },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
