@@ -60,7 +60,7 @@ await app.register(prismaPlugin);
 await app.register(jwtPlugin);
 
 // Health + OpenAPI JSON
-app.get("/health", async () => ({ status: "okkkkkk" }));
+app.get("/health", async () => ({ status: "okkkkkkk" }));
 app.get("/openapi.json", async () => app.swagger());
 
 // Routes
