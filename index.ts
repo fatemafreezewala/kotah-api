@@ -65,7 +65,7 @@ app.get("/health", async () => ({ status: "okkkkkkk" }));
 app.get("/openapi.json", async () => app.swagger());
 
 // Routes
-await app.register(authRoutes);
+await app.register(authRoutes, { prefix: "/api/user" });
 // await app.register(familyRoutes, { prefix: "/api/family" });
 
 const port = Number(process.env.PORT ?? 3000);
