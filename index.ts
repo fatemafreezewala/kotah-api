@@ -10,7 +10,6 @@ import swaggerUI from "@fastify/swagger-ui";
 import prismaPlugin from "./src/plugins/prisma.js";
 import jwtPlugin from "./src/plugins/jwt.js";
 import authRoutes from "./src/routes/auth.routes.js";
-import profileRoutes from "./src/routes/profile.routes.js";
 // import familyRoutes from "./src/routes/family.routes.js";
 
 // Create Fastify instance with Ajv config allowing "example" keyword
@@ -48,9 +47,7 @@ await app.register(swagger, {
       },
     },
     tags: [
-      { name: "Auth", description: "Authentication" },
-      { name: "Profile", description: "User profile  management" },
-      // { name: "Family", description: "Families & members" },
+      { name: "User", description: "User authentication & profile" },
     ],
   },
 });
@@ -68,8 +65,7 @@ app.get("/health", async () => ({ status: "okkkkkkk" }));
 app.get("/openapi.json", async () => app.swagger());
 
 // Routes
-await app.register(authRoutes, { prefix: "/api/auth" });
-await app.register(profileRoutes); // no prefix -> /profile, /profile/complete
+await app.register(authRoutes);
 // await app.register(familyRoutes, { prefix: "/api/family" });
 
 const port = Number(process.env.PORT ?? 3000);
