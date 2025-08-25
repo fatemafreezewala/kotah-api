@@ -176,7 +176,7 @@ export async function login(req: FastifyRequest, reply: FastifyReply) {
     },
     test:"123"
   });
-}
+} 
 
 // ----- POST /auth/refresh -----
 export async function refresh(req: FastifyRequest, reply: FastifyReply) {

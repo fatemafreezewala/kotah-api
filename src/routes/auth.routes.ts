@@ -119,64 +119,112 @@ export default async function routes(app: FastifyInstance) {
     },
     handler: ctrl.signup,
   });
-  // Send OTP
-  app.post("/otp/send", {
-    schema: {
-      tags: ["User"],
-      summary: "Send OTP to email or phone",
-      body: {
-        type: "object",
-        required: ["target"],
-        properties: {
-          target: { type: "string", example: "user@example.com" },
-          purpose: { type: "string", enum: ["signup", "login"], example: "signup" },
-        },
-      },
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            ok: { type: "boolean" },
-            ttlMinutes: { type: "number" },
-          },
-        },
-      },
-    },
-    handler: ctrl.sendOtp,
-  });
 
-  // Verify OTP
-  app.post("/otp/verify", {
+  // Complete profile
+  app.post("/profile/complete", {
     schema: {
       tags: ["User"],
-      summary: "Verify OTP and login/register",
+      summary: "Complete user profile and create family",
       body: {
+        
         type: "object",
-        required: ["target", "code"],
+        required: ["name", "familyName", "roleInFamily"],
         properties: {
-          target: { type: "string", example: "user@example.com" },
-          code: { type: "string", example: "123456" },
-          profile: {
-            type: "object",
-            properties: {
-              name: { type: "string", example: "Aisha" },
+          name: { type: "string", example: "Aisha" },
+          gender: { type: "string", enum: ["male", "female", "other"], example: "female " },
+          birthDate: { type: "string", format: "date", example: "1990-01-01" },
+          avatarUrl: { type: "string", format: "url", example: "https://example.com/avatar.jpg" },
+          familyName: { type: "string", example: "My Family" },
+          roleInFamily: {
+            type: "string",
+            enum: ["OWNER", "SPOUSE", "SON", "DAUGHTER", "GUARDIAN", "OTHER"],
+            example: "OWNER",
+          },
+          locations: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                label: { type: "string", example: "Home" },
+                address: { type: "string", example: "123 Main St" },
+                lat: { type: "number", example: 25.276987 },
+                lng: { type: "number", example: 55.296249 },
+              },
             },
           },
         },
       },
       response: {
-        200: {
+        201: {
           type: "object",
           properties: {
-            access: { type: "string" },
-            refresh: { type: "string" },
+            ok: { type: "boolean" },
             user: { type: "object" },
+            family: { type: "object" },
           },
         },
       },
     },
-    handler: ctrl.verifyOtp,
+    handler: ctrl.completeProfile,
   });
+  // // Send OTP
+  // app.post("/otp/send", {
+  //   schema: {
+  //     tags: ["User"],
+  //     summary: "Send OTP to email or phone",
+  //     body: {
+  //       type: "object",
+  //       required: ["target"],
+  //       properties: {
+  //         target: { type: "string", example: "user@example.com" },
+  //         purpose: { type: "string", enum: ["signup", "login"], example: "signup" },
+  //       },
+  //     },
+  //     response: {
+  //       200: {
+  //         type: "object",
+  //         properties: {
+  //           ok: { type: "boolean" },
+  //           ttlMinutes: { type: "number" },
+  //         },
+  //       },
+  //     },
+  //   },
+  //   handler: ctrl.sendOtp,
+  // });
+
+  // // Verify OTP
+  // app.post("/otp/verify", {
+  //   schema: {
+  //     tags: ["User"],
+  //     summary: "Verify OTP and login/register",
+  //     body: {
+  //       type: "object",
+  //       required: ["target", "code"],
+  //       properties: {
+  //         target: { type: "string", example: "user@example.com" },
+  //         code: { type: "string", example: "123456" },
+  //         profile: {
+  //           type: "object",
+  //           properties: {
+  //             name: { type: "string", example: "Aisha" },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     response: {
+  //       200: {
+  //         type: "object",
+  //         properties: {
+  //           access: { type: "string" },
+  //           refresh: { type: "string" },
+  //           user: { type: "object" },
+  //         },
+  //       },
+  //     },
+  //   },
+  //   handler: ctrl.verifyOtp,
+  // });
 
   // Refresh Token
   app.post("/refresh", {
@@ -226,51 +274,4 @@ export default async function routes(app: FastifyInstance) {
     handler: ctrl.logout,
   });
 
-  // Complete profile
-  app.post("/profile/complete", {
-    schema: {
-      tags: ["User"],
-      summary: "Complete user profile and create family",
-      body: {
-        
-        type: "object",
-        required: ["name", "familyName", "roleInFamily"],
-        properties: {
-          name: { type: "string", example: "Aisha" },
-          gender: { type: "string", enum: ["male", "female", "other"], example: "female" },
-          birthDate: { type: "string", format: "date", example: "1990-01-01" },
-          avatarUrl: { type: "string", format: "url", example: "https://example.com/avatar.jpg" },
-          familyName: { type: "string", example: "My Family" },
-          roleInFamily: {
-            type: "string",
-            enum: ["OWNER", "SPOUSE", "SON", "DAUGHTER", "GUARDIAN", "OTHER"],
-            example: "OWNER",
-          },
-          locations: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                label: { type: "string", example: "Home" },
-                address: { type: "string", example: "123 Main St" },
-                lat: { type: "number", example: 25.276987 },
-                lng: { type: "number", example: 55.296249 },
-              },
-            },
-          },
-        },
-      },
-      response: {
-        201: {
-          type: "object",
-          properties: {
-            ok: { type: "boolean" },
-            user: { type: "object" },
-            family: { type: "object" },
-          },
-        },
-      },
-    },
-    handler: ctrl.completeProfile,
-  });
 }
